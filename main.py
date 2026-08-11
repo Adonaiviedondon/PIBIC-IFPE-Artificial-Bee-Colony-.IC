@@ -33,8 +33,8 @@ FUNCOES = {
 }
 
 
-NUM_EXECUCOES    = 30
-NUM_ITERACOES    = 1000
+NUM_EXECUCOES    = 40
+NUM_ITERACOES    = 1500
 TAMANHO_PROBLEMA = 10
 NUM_OPERARIAS    = 45
 NUM_OBSERVADORAS = 45
@@ -51,7 +51,7 @@ def testeSimples():
         num_operarias    = 45,
         num_observadoras = 45,
         tamanhoProblema     = 10,
-        Num_Interacoes   = 1000,
+        Num_Interacoes   = 1500,
         Num_Falhas      = 20,
         bounds           = (-100, 100),
         verbose          = True,
