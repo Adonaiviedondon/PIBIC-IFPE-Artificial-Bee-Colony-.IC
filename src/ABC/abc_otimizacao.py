@@ -55,5 +55,41 @@ class AbcOtimizacao(AlgoritmoOtimizacao):
         else:
             self.contadores[index] += 1
 
+    def executar_ciclo(self):
+            n = self.tamanho_populacao
+
+            for i in range(n):
+                self.explorar(i) 
+            valor = 1.0 / (1.0 + self.fitness)
+            prob  = valor / np.sum(valor)
+
+            for i in range(n):
+                idx = int(np.random.choice(range(n), p=prob))
+                self._explorar(idx)
+            v1, v2 = self.bounds
+            for i in range(n):
+                if self.contadores[i] > self.num_falhas:
+                    self.populacao[i]  = np.random.uniform(v1, v2, self.tamanho_problema)
+                    self.fitness[i]    = self.funcao(self.populacao[i])
+                    self.contadores[i] = 0  
+
+                    melhor_atual       = float(np.min(self.fitness))
+            self.melhor_global = min(self.melhor_global, melhor_atual)
+            self.historico_fitness.append(self.melhor_global)
+ 
+            return self.melhor_global
+        
+
+    def obter_melhor_fitness(self):
+        return self.melhor_global  
+
+    def obter_melhor_solucao(self):
+        self.populacao[int(np.argmin(self.fitness))]
+
+    def obter_taxa_melhoria(self):
+        if len(self.historico_fitness) < 12:
+            return 1.0 
+        ultimos = self.historico_fitness[-12:]
+        return abs(ultimos[0] - ultimos[-1]) / (abs(ultimos[0]) + 1e-10)
           
 
