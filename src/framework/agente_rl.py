@@ -7,8 +7,8 @@ class AgenteRL:
 
     def __init__(self,alpha = 0.15,gamma = 0.85,epsilon = 0.35):
         self.alpha = alpha
-        self.alpha = gamma
-        self.alpha = epsilon
+        self.gama = gamma
+        self.epsilon = epsilon
 
         self.tabela_Q= np.zeros(6,3)
 
