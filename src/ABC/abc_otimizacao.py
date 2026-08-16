@@ -32,7 +32,7 @@ class AbcOtimizacao(AlgoritmoOtimizacao):
         dimensao = random.randint(0,y - 1)
 
         solucao_vizinhas = []
-        for i in range(n):
+        for i in range():
             if i != index:
                 solucao_vizinhas()
         solucao_vizinha_escolhida = random.choice(solucao_vizinhas)
@@ -91,5 +91,14 @@ class AbcOtimizacao(AlgoritmoOtimizacao):
             return 1.0 
         ultimos = self.historico_fitness[-12:]
         return abs(ultimos[0] - ultimos[-1]) / (abs(ultimos[0]) + 1e-10)
-          
+
+
+    def obter_estado(self):
+            return{
+                'melhor_fitness' : self.melhor_global,
+                'media_fitness'  : float(np.mean(self.fitness)),
+                'desvio_padrao'  : float(np.std(self.fitness)),
+                'diversidade': float(np.mean(np.std(self.posicoes, axis=0))),
+                'taxa_melhoria' : self.taxa_melhoria(),
+        }    
 

@@ -14,4 +14,10 @@ class AmbienteOtimizacao:
 
         self.algoritmos = {0:AbcOtimizador,1:PsoOtimizador,2:GwoOtimizador}
         self.nomes = {0:"ABC",1:"PSO",2:"GWO"}
-        
+        self.agente = AgenteRL(alpha = 0.15,gamma = 0.85,epsilon = 0.35)
+
+        self.historico = {
+            "melhor_fitness":[],
+            "algotritmo_selecionado":[],
+            "recompensa":[],
+        }

@@ -6,9 +6,9 @@ class AgenteRL:
     AlgoritmoAcao ={0:"Abc" ,1:"PSO",2:"GWO"}
 
     def __init__(self,alpha = 0.15,gamma = 0.85,epsilon = 0.35):
-        self.alpha = alpha
-        self.gama = gamma
-        self.epsilon = epsilon
+        self.alpha = alpha,
+        self.gama = gamma,
+        self.epsilon = epsilon,
 
         self.tabela_Q= np.zeros(6,3)
 
@@ -48,7 +48,7 @@ class AgenteRL:
         else:
             return -0.02
     
-    def atualizar(self, estado_anterior, acao, recompensa, estado_atual:
+    def atualizar(self, estado_anterior, acao, recompensa, estado_atual):
         s  = self.discretizar_estado(estado_anterior)
         s2 = self.discretizar_estado(estado_atual)
 
