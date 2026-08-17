@@ -10,5 +10,5 @@ from .FuncoesParaSolucao import (
     BananaRosenBrock,
     DimensaoVetorAckley,
     OtimizacaoGlobalGriewank,
-    OtimizaçaoZakharov,
+    OtimizacaoZakharov,
 )
