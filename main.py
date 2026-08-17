@@ -1,149 +1,152 @@
 import sys
+import json
 import numpy as np
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# garante que a raiz do projeto está no PATH do Python
+sys.path.insert(0, str(Path(__file__).parent))
 
-from src.ABC.controlador import AbcControlador
+# funções benchmark — as mesmas que já existiam no projeto
 from src.ABC.FuncoesParaSolucao import (
     Esfera,
     Rastringin,
     BananaRosenBrock,
     DimensaoVetorAckley,
     OtimizacaoGlobalGriewank,
-    OtimizaçaoZakharov
-)
-from src.utils.analisador import Analisador
-from src.utils.plot import plot
-from src.utils.ajudantes import (
-    DataDadosArquivos,
-    LoggingExperimentos,
-    BarraProgresso,
-    printHeader,
-    printSecao,
+    OtimizacaoZakharov,
 )
 
+# framework híbrido — novo
+from src.framework.ambiente import AmbienteSimulacao
+
+# utilitários — os mesmos que já existiam
+from src.utils.ajudantes import (
+    printHeader,
+    printSecao,
+    LoggingExperimentos,
+    BarraProgresso,
+)
+
+# ── configurações do experimento ─────────────────────────────────────────────
 FUNCOES = {
-     'Esfera':      Esfera,
-    'Rastrigin':   Rastringin,
-    'Rosenbrock':  BananaRosenBrock,
-    'Ackley':      DimensaoVetorAckley,
-    'Griewank':    OtimizacaoGlobalGriewank,
-    'Zakharov':    OtimizaçaoZakharov,
+    'Esfera'     : Esfera,
+    'Rastrigin'  : Rastringin,
+    'Rosenbrock' : BananaRosenBrock,
+    'Ackley'     : DimensaoVetorAckley,
+    'Griewank'   : OtimizacaoGlobalGriewank,
+    'Zakharov'   : OtimizacaoZakharov,
+}
+
+CONFIG = {
+    'tamanho_populacao' : 30,
+    'tamanho_problema'  : 10,
+    'num_iteracoes'     : 500,
+    'num_execucoes'     : 10,
+    'bounds'            : (-100, 100),
+    'pasta_resultados'  : 'data/results',
 }
 
 
-NUM_EXECUCOES    = 40
-NUM_ITERACOES    = 1500
-TAMANHO_PROBLEMA = 10
-NUM_OPERARIAS    = 45
-NUM_OBSERVADORAS = 45
-NUM_FALHAS       = 50
-BOUNDS           = (-100, 100)
-PASTA_RESULTADOS = 'data/results'
-
 def testeSimples():
-    printHeader("ABC — Teste Simples (Esfera)")
+    printHeader("TESTE SIMPLES — Esfera (1 execução, framework híbrido)")
 
-    abc = AbcControlador(
-        eficiencia_fn = Esfera,
-        FunçoesParaSolução= None,
-        num_operarias    = 45,
-        num_observadoras = 45,
-        tamanhoProblema     = 10,
-        Num_Interacoes   = 1500,
-        Num_Falhas      = 20,
-        bounds           = (-100, 100),
-        verbose          = True,
+    ambiente = AmbienteSimulacao(
+        funcao            = Esfera,
+        bounds            = CONFIG['bounds'],
+        tamanho_populacao = CONFIG['tamanho_populacao'],
+        tamanho_problema  = CONFIG['tamanho_problema'],
+        num_iteracoes     = 100,
+        verbose           = True,
     )
 
-    melhor_solucao, melhor_fitness, historico = abc.run()
-    print(f"\nMelhor fitness que foi encontrado:{melhor_fitness:.6f}")
+    melhor_solucao, melhor_fitness, historico = ambiente.executar()
 
-    plotter = plot(diretorioGraficos=PASTA_RESULTADOS)
-    plotter.PlotConvergenciaAlgoritmo(
-         historia= historico,
-         title= "convergencia da Esfera",
-         filename="teste da esfera",
-         show=False
-
-    )
-
-    
+    print(f"\n  Melhor fitness encontrado: {melhor_fitness:.6f}")
+    ambiente.imprimir_uso_algoritmos()
+    ambiente.agente.imprimir_qtable()
 
 
 def rodarExperimentos():
-    printHeader("Resultado dos Experimentos")
+    printHeader("FRAMEWORK HÍBRIDO ABC + PSO + GWO — Experimentos Completos")
 
-    # NUM_EXECUCOES    = 32
-    # NUM_ITERACOES    = 110
-    # TAMANHO_PROBLEMA = 12
-    # NUM_FALHAS       = 40
+    logger = LoggingExperimentos(verbose=True)
+    pasta  = Path(CONFIG['pasta_resultados'])
+    pasta.mkdir(parents=True, exist_ok=True)
 
-    logger   = LoggingExperimentos(verbose=True)
-    plotter = plot(diretorioGraficos=PASTA_RESULTADOS)
-
-    historicos_por_funcao = {}
-    melhores_por_funcao ={}
+    todos_resultados = {}
 
     for nome, fn in FUNCOES.items():
         printSecao(f"Função: {nome}")
 
-        melhores   = []
-        historicos = []
-        barra      = BarraProgresso(NUM_EXECUCOES, nome)
-              
+        melhores       = []
+        uso_algoritmos = {'ABC': 0, 'PSO': 0, 'GWO': 0}
+        barra          = BarraProgresso(CONFIG['num_execucoes'], nome)
 
-        
-        for execucao in range(NUM_EXECUCOES):
-            abc = AbcControlador(
-                eficiencia_fn = fn,
-                FunçoesParaSolução = fn,
-                num_operarias    = NUM_OPERARIAS,
-                num_observadoras = NUM_OBSERVADORAS,
-                tamanhoProblema    = TAMANHO_PROBLEMA,
-                Num_Interacoes   = NUM_ITERACOES,
-                Num_Falhas       = NUM_FALHAS,
-                bounds           = BOUNDS,
-                verbose          = False
+        for execucao in range(CONFIG['num_execucoes']):
+
+            ambiente = AmbienteSimulacao(
+                funcao            = fn,
+                bounds            = CONFIG['bounds'],
+                tamanho_populacao = CONFIG['tamanho_populacao'],
+                tamanho_problema  = CONFIG['tamanho_problema'],
+                num_iteracoes     = CONFIG['num_iteracoes'],
+                verbose           = False,
             )
 
-            melhor_solucao, melhor_fitness, historico = abc.run()
+            melhor_solucao, melhor_fitness, historico = ambiente.executar()
             melhores.append(melhor_fitness)
-            historicos.append(historico)
-            barra.atualizar(execucao + 1)
-            logger.info(f"{nome} | execução {execucao+1}/{NUM_EXECUCOES}" f"| fitness: {melhor_fitness:.6f}")
 
-        
-        analisador = Analisador(nome, melhores, historicos)
-        analisador.salvar(PASTA_RESULTADOS)
-        plotter.PlotConvergenciaMedia(
-                historicos = historicos,
-                nome_funcao = nome,
-                filename = f'convergencia_{nome}.png',
-                show = False
+            for alg, count in _contar_uso(historico['algoritmo_usado']).items():
+                uso_algoritmos[alg] += count
+
+            barra.atualizar()
+            logger.info(
+                f"{nome} | execução {execucao+1}/{CONFIG['num_execucoes']} "
+                f"| fitness: {melhor_fitness:.6f}"
             )
-        historicos_por_funcao[nome] = historicos[-1]
-        melhores_por_funcao[nome]   = melhores
+
+        resultado = {
+            'funcao'           : nome,
+            'melhor'           : float(np.min(melhores)),
+            'pior'             : float(np.max(melhores)),
+            'media'            : float(np.mean(melhores)),
+            'desvio_padrao'    : float(np.std(melhores)),
+            'mediana'          : float(np.median(melhores)),
+            'melhores_por_exec': melhores,
+            'uso_algoritmos'   : uso_algoritmos,
+        }
+
+        caminho = pasta / f'hibrido_{nome}.json'
+        with open(caminho, 'w', encoding='utf-8') as f:
+            json.dump(resultado, f, indent=2, ensure_ascii=False)
+
+        todos_resultados[nome] = resultado
 
         printSecao(f"Resultados — {nome}")
-        analisador.imprimir_resumo()
+        print(f"  Melhor   : {resultado['melhor']:.6f}")
+        print(f"  Pior     : {resultado['pior']:.6f}")
+        print(f"  Média    : {resultado['media']:.6f}")
+        print(f"  Desvio   : {resultado['desvio_padrao']:.6f}")
+        print(f"  Uso ABC  : {uso_algoritmos['ABC']}")
+        print(f"  Uso PSO  : {uso_algoritmos['PSO']}")
+        print(f"  Uso GWO  : {uso_algoritmos['GWO']}")
 
-        plotter.PlotConvergenciaMultipla(
-        historicos = historicos_por_funcao,
-        filename   = 'comparativo_convergencias.png',
-        show       = False
-    )
-    plotter.PlotBoxplot(
-        resultados = melhores_por_funcao,
-        filename   = 'boxplot_resultados.png',
-        show       = False
-    )
+    caminho_geral = pasta / 'resumo_hibrido.json'
+    with open(caminho_geral, 'w', encoding='utf-8') as f:
+        json.dump(todos_resultados, f, indent=2, ensure_ascii=False)
 
     logger.tempo_passado()
-    logger.sucesso("Experimentos concluídos. Resultados em data/results/")
+    logger.sucesso(f"Resultados salvos em {CONFIG['pasta_resultados']}/")
+
+
+def _contar_uso(lista_algoritmos):
+    return {
+        'ABC': lista_algoritmos.count('ABC'),
+        'PSO': lista_algoritmos.count('PSO'),
+        'GWO': lista_algoritmos.count('GWO'),
+    }
+
 
 if __name__ == '__main__':
-    
     testeSimples()
     rodarExperimentos()
