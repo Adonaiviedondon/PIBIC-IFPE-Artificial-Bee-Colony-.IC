@@ -1,1 +1,1 @@
-from  pso_otimizacao import PsoOtimizador
+from  pso_otimizacao import PsoOtimizador;

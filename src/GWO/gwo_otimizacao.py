@@ -1,8 +1,8 @@
 import numpy as np
 import sys
-from pathlib import path
+from pathlib import Path
 
-sys.path.insert(0, str(path(__file__).parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from src.framework.interface import AlgoritmoOtimizacao
 
 

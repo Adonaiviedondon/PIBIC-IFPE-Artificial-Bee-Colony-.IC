@@ -5,7 +5,7 @@ from pathlib import Path
 sys.path.insert(0,str(Path(__file__).parent.parent.parent))
 from src.framework.interface import AlgoritmoOtimizacao
 
-class PsoOtimizador(AlgoritmoOtimizacao):
+class PsoOtimizacao(AlgoritmoOtimizacao):
     def iniciar(self,funcao,bounds,tamanho_populacao = 50,tamanho_problema = 12):
         self.funcao = funcao
         self.bounds = bounds

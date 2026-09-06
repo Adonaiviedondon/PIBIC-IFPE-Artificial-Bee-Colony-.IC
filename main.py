@@ -13,7 +13,7 @@ from src.ABC.FuncoesParaSolucao import (
     BananaRosenBrock,
     DimensaoVetorAckley,
     OtimizacaoGlobalGriewank,
-    OtimizacaoZakharov,
+    OtimizaçaoZakharov,
 )
 
 # framework híbrido — novo
@@ -34,7 +34,7 @@ FUNCOES = {
     'Rosenbrock' : BananaRosenBrock,
     'Ackley'     : DimensaoVetorAckley,
     'Griewank'   : OtimizacaoGlobalGriewank,
-    'Zakharov'   : OtimizacaoZakharov,
+    'Zakharov'   : OtimizaçaoZakharov,
 }
 
 CONFIG = {
@@ -139,7 +139,7 @@ def rodarExperimentos():
     logger.sucesso(f"Resultados salvos em {CONFIG['pasta_resultados']}/")
 
 
-def _contar_uso(lista_algoritmos):
+def contar_uso(lista_algoritmos):
     return {
         'ABC': lista_algoritmos.count('ABC'),
         'PSO': lista_algoritmos.count('PSO'),
