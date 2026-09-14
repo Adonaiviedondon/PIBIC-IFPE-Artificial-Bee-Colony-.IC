@@ -1,6 +1,6 @@
-from src.ABC.abc_otimizacao import AbcOtimizador
-from src.PSO.pso_otimizacao import PsoOtimizador
-from src.GWO.gwo_otimizacao import GwoOtimizador
+from src.ABC.abc_otimizacao import AbcOtimizacao
+from src.PSO.pso_otimizacao import PsoOtimizacao
+from src.GWO.gwo_otimizacao import GwoOtimizacao
 from src.framework.agente_rl import AgenteRL
 import numpy as np 
 
