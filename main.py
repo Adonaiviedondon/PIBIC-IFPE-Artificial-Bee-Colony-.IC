@@ -49,7 +49,7 @@ CONFIG = {
 def testeSimples():
     printHeader("TESTE SIMPLES — Esfera (1 execução, framework híbrido)")
 
-    ambiente = AmbienteSimulacao(
+    ambiente = ambiente(
         funcao            = Esfera,
         bounds            = CONFIG['bounds'],
         tamanho_populacao = CONFIG['tamanho_populacao'],
@@ -83,7 +83,7 @@ def rodarExperimentos():
 
         for execucao in range(CONFIG['num_execucoes']):
 
-            ambiente = AmbienteSimulacao(
+            ambiente = ambiente(
                 funcao            = fn,
                 bounds            = CONFIG['bounds'],
                 tamanho_populacao = CONFIG['tamanho_populacao'],
@@ -95,7 +95,7 @@ def rodarExperimentos():
             melhor_solucao, melhor_fitness, historico = ambiente.executar()
             melhores.append(melhor_fitness)
 
-            for alg, count in _contar_uso(historico['algoritmo_usado']).items():
+            for alg, count in contar_uso(historico['algoritmo_usado']).items():
                 uso_algoritmos[alg] += count
 
             barra.atualizar()
