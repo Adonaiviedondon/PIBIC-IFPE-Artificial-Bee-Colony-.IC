@@ -8,7 +8,7 @@ class AlgoritmoOtimizacao(ABC):
 
 
     @abstractmethod
-    def executar_Ciclo(self):
+    def executar_ciclo(self):
         pass
 
     @abstractmethod

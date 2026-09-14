@@ -12,7 +12,7 @@ class PsoOtimizacao(AlgoritmoOtimizacao):
         self.tamanho_populacao = tamanho_populacao
         self.tamanho_problema = tamanho_problema
         self.melhor_global = float('inf')
-        self.historico.fitness = []
+        self.historico_fitness = []
         
         self.w = 0.8#peso da inercia 
         self.c1 = 1.7#coeficiente cognitivo
@@ -33,16 +33,16 @@ class PsoOtimizacao(AlgoritmoOtimizacao):
         self.global_best_position = np.copy(self.posicoes[ind_global])#posiçao e valor exato da melhor particula
         
     
-    def execucao_ciclo(self):
-    #extraindo os limites e numerom de particulas
-        v1 ,v2 = self.bounds
-        n = self.tamanho_populaçao
-        r1 =np.random.rand(n,self.tamanho_problema)
-        r2 =np.random.rand(n,self.tamanho_problema)
+    def executar_ciclo(self):                              
+        v1, v2 = self.bounds
+        n  = self.tamanho_populacao                        
+        r1 = np.random.rand(n, self.tamanho_problema)
+        r2 = np.random.rand(n, self.tamanho_problema)
+
 
         self.velocidades = (self.w  * self.velocidades+ self.c1 * r1 * (self.individual_best_position - self.posicoes) + self.c2 * r2 * (self.global_best_position  - self.posicoes))
         self.posicoes = np.clip(self.posicoes + self.velocidades,v1,v2)
-        self.fitness = np.array(self.funcao(i) for i in self.posicoes)
+        self.fitness  = np.array([self.funcao(i) for i in self.posicoes])
 
         melhora = self.fitness < self.individual_best_fitness
         self.individual_best_position[melhora] = self.posicoes[melhora]
@@ -51,7 +51,7 @@ class PsoOtimizacao(AlgoritmoOtimizacao):
         if self.fitness[ind_melhor] < self.melhor_global:
             self.global_best_fitness = float(self.fitness[ind_melhor])
             self.global_best_position = np.copy(self.posicoes[ind_melhor])
-        self.historico.fitness.append(self.global_best_fitness)
+        self.historico_fitness.append(self.global_best_fitness)
         return self.global_best_fitness
 
     def obter_melhor_fitness(self):
@@ -66,14 +66,16 @@ class PsoOtimizacao(AlgoritmoOtimizacao):
             'media_fitness' : float(np.mean(self.fitness)),
             'desvio_padrao' : float(np.std(self.fitness)),
             'diversidade': float(np.mean(np.std(self.posicoes, axis=0))),
-            'taxa_melhoria' : self.taxa_melhoria(),
+            'taxa_melhoria' : self._taxa_melhoria(),
     }
 
-    def taxa_melhoria(self):
+    def _taxa_melhoria(self):
         if len(self.historico_fitness) < 12:
             return 1.0
         ultimos = self.historico_fitness[-12:]
         return abs(ultimos[0] - ultimos[-1]) / (abs(ultimos[0]) + 1e-10)
+
+    
 
 
     

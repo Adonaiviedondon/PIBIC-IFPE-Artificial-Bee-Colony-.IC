@@ -19,7 +19,7 @@ class AmbienteOtimizacao:
         self.pso = PsoOtimizacao()
         self.gwo = GwoOtimizacao()
 
-        self.algoritmos = {0:AbcOtimizacao,1:PsoOtimizacao,2:GwoOtimizacao}
+        self.algoritmos = {0: self.abc, 1: self.pso, 2: self.gwo}
         self.nomes = {0:"ABC",1:"PSO",2:"GWO"}
         self.agente = AgenteRL(alpha = 0.15,gamma = 0.85,epsilon = 0.35)
 
@@ -29,24 +29,28 @@ class AmbienteOtimizacao:
             'recompensas'    : [],   
         }
     def iniciarAlgoritmo(self):
-        for algoritmo in self.algoritmos.values():
-            if isinstance(algoritmo, GwoOtimizacao):
-                algoritmo.iniciar(
-                self.funcao ,
-                self.bounds,
-                tamanho_populacao = self.tamanho_populacao,  # ← argumentos nomeados
-                tamanho_problema  = self.tamanho_problema,   # ← evita confusão de ordem
-                Num_Interacoes    = self.num_iteracoes
-            )
-            else:
-                algoritmo.iniciar(
-                self.funcao,
-                self.bounds,
-                tamanho_populacao = self.tamanho_populacao,  # ← argumentos nomeados
-                tamanho_problema  = self.tamanho_problema
-            )
+        self.abc.iniciar(
+        self.funcao,
+        self.bounds,
+        tamanho_populacao = self.tamanho_populacao,
+        tamanho_problema  = self.tamanho_problema,
+    )
+        self.pso.iniciar(
+        self.funcao,
+        self.bounds,
+        tamanho_populacao = self.tamanho_populacao,
+        tamanho_problema  = self.tamanho_problema,
+        # Num_Interacoes    = self.num_iteracoes,
+    )
+        self.gwo.iniciar(
+        self.funcao,
+        self.bounds,
+        tamanho_populacao = self.tamanho_populacao,
+        tamanho_problema  = self.tamanho_problema,
+        Num_Interacoes    = self.num_iteracoes,
+    )
 
-    def obterEstadoGlobal(self):
+    def obter_estado_global(self):
         estados = [alg.obter_estado() for alg in self.algoritmos.values()]
         return {
             'melhor_fitness': self.melhor_global,
@@ -58,7 +62,7 @@ class AmbienteOtimizacao:
 
     def executar(self):
         
-        self._iniciar_algoritmos()
+        self.iniciarAlgoritmo()
  
         for iteracao in range(self.num_iteracoes):
             estado_antes  = self.obter_estado_global()

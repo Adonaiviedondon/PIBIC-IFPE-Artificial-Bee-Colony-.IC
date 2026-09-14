@@ -15,7 +15,7 @@ from src.ABC.FuncoesParaSolucao import (
     OtimizacaoGlobalGriewank,
     OtimizaçaoZakharov,
 )
-
+from src.utils.plot import plot 
 # framework híbrido — novo
 from src.framework.ambiente import AmbienteOtimizacao
 # utilitários — os mesmos que já existiam
@@ -68,21 +68,24 @@ def testeSimples():
 def rodarExperimentos():
     printHeader("FRAMEWORK HÍBRIDO ABC + PSO + GWO — Experimentos Completos")
 
-    logger = LoggingExperimentos(verbose=True)
-    pasta  = Path(CONFIG['pasta_resultados'])
+    logger  = LoggingExperimentos(verbose=True)
+    plotter = plot(diretorioGraficos=CONFIG['pasta_resultados'])  # instancia o plot
+    pasta   = Path(CONFIG['pasta_resultados'])
     pasta.mkdir(parents=True, exist_ok=True)
 
-    todos_resultados = {}
+    todos_resultados       = {}
+    historicos_por_funcao  = {}   # ADICIONADO
+    melhores_por_funcao    = {}   # ADICIONADO
 
     for nome, fn in FUNCOES.items():
         printSecao(f"Função: {nome}")
 
         melhores       = []
+        historicos     = []        # ADICIONADO
         uso_algoritmos = {'ABC': 0, 'PSO': 0, 'GWO': 0}
         barra          = BarraProgresso(CONFIG['num_execucoes'], nome)
 
         for execucao in range(CONFIG['num_execucoes']):
-
             amb = AmbienteOtimizacao(
                 funcao            = fn,
                 bounds            = CONFIG['bounds'],
@@ -94,6 +97,9 @@ def rodarExperimentos():
 
             melhor_solucao, melhor_fitness, historico = amb.executar()
             melhores.append(melhor_fitness)
+            historicos.append({                        # ADICIONADO — guarda historico real
+                'best_fitness': historico['melhor_fitness']
+            })
 
             for alg, count in contar_uso(historico['algoritmo_usado']).items():
                 uso_algoritmos[alg] += count
@@ -104,6 +110,7 @@ def rodarExperimentos():
                 f"| fitness: {melhor_fitness:.6f}"
             )
 
+        # Salva JSON
         resultado = {
             'funcao'           : nome,
             'melhor'           : float(np.min(melhores)),
@@ -115,26 +122,40 @@ def rodarExperimentos():
             'uso_algoritmos'   : uso_algoritmos,
         }
 
-        caminho = pasta / f'hibrido_{nome}.json'
-        with open(caminho, 'w', encoding='utf-8') as f:
+        with open(pasta / f'hibrido_{nome}.json', 'w', encoding='utf-8') as f:
             json.dump(resultado, f, indent=2, ensure_ascii=False)
 
-        todos_resultados[nome] = resultado
+        todos_resultados[nome]      = resultado
+        historicos_por_funcao[nome] = historicos   # ADICIONADO
+        melhores_por_funcao[nome]   = melhores     # ADICIONADO
+
+        # Gráfico de convergência por função
+        plotter.PlotConvergenciaMedia(             # ADICIONADO
+            historicos  = historicos,
+            nome_funcao = nome,
+            filename    = f'convergencia_{nome}.png',
+            show        = False
+        )
 
         printSecao(f"Resultados — {nome}")
         print(f"  Melhor   : {resultado['melhor']:.6f}")
         print(f"  Pior     : {resultado['pior']:.6f}")
         print(f"  Média    : {resultado['media']:.6f}")
         print(f"  Desvio   : {resultado['desvio_padrao']:.6f}")
-        print(f"  Uso ABC  : {uso_algoritmos['ABC']}")
-        print(f"  Uso PSO  : {uso_algoritmos['PSO']}")
-        print(f"  Uso GWO  : {uso_algoritmos['GWO']}")
+        for alg in ['ABC', 'PSO', 'GWO']:
+            print(f"  Uso {alg}  : {uso_algoritmos[alg]}")
 
-    caminho_geral = pasta / 'resumo_hibrido.json'
-    with open(caminho_geral, 'w', encoding='utf-8') as f:
+    # Gráficos finais comparativos
+    plotter.PlotBoxplot(                           # ADICIONADO
+        resultados = melhores_por_funcao,
+        filename   = 'boxplot_resultados.png',
+        show       = False
+    )
+
+    with open(pasta / 'resumo_hibrido.json', 'w', encoding='utf-8') as f:
         json.dump(todos_resultados, f, indent=2, ensure_ascii=False)
 
-    logger.tempo_decorrido() 
+    logger.tempo_passado()
     logger.sucesso(f"Resultados salvos em {CONFIG['pasta_resultados']}/")
 
 

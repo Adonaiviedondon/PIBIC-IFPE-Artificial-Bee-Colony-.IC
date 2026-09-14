@@ -70,6 +70,8 @@ class LoggingExperimentos:
         tempoSegundos = int(tempo.total_seconds())
         minutos, seg = divmod(tempoSegundos, 60)
         print(f"[TEMPO] Experimentos concluídos em {minutos}m {seg}s")
+    def tempo_decorrido(self):      # ← adiciona essa linha
+        self.tempo_passado()  
 class BarraProgresso:
     def __init__(self, total, descricao='Progresso'):
         self.total = total

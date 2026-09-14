@@ -10,9 +10,7 @@ from src.framework.interface import AlgoritmoOtimizacao
 
 class AbcOtimizacao(AlgoritmoOtimizacao):
 
-    def iniciar(self, funcao, bounds,                        
-                tamanho_populacao=50, tamanho_problema=12,
-                Num_Interacoes=100, **kwargs):
+    def iniciar(self, funcao, bounds, tamanho_populacao=50, tamanho_problema=12, **kwargs):
         self.funcao            = funcao
         self.bounds            = bounds
         self.tamanho_populacao = tamanho_populacao

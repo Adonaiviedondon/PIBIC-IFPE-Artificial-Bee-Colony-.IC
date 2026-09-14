@@ -30,16 +30,21 @@ class AgenteRL:
 
         return taxa_index * 2 + diversidade_index
 
-    def selecionar_acao(self,estado):
+    def selecionar_acao(self, estado):
         index_estado = self.discretizar_estado(estado)
 
         if np.random.rand() < self.epsilon:
-            acao = np.random.rand(0,3) 
+            acao = int(np.random.randint(0, 3))  # ← int() garante tipo correto
         else:
             acao = int(np.argmax(self.tabela_Q[index_estado]))
 
+        return acao    # ← único return
+
     def diminuir_epsilon(self,fator =0.99,minimo=0.05):
         self.epsilon = max(minimo,self.epsilon*fator)
+
+    def reduzir_epsilon(self, fator=0.99, minimo=0.05):
+        self.diminuir_epsilon(fator, minimo)
 
     def calcular_recompensa(self,fitness_anterior,fitness_posterior):
         melhoria = fitness_anterior - fitness_posterior
@@ -56,6 +61,12 @@ class AgenteRL:
         q_futuro = np.max(self.tabela_Q[s2])
 
         self.tabela_Q[s,acao] += self.alpha * (recompensa + self.gamma * q_futuro - q_atual)
+    def imprimir_qtable(self):
+        print("\n  Q-Table do Agente RL:")
+        print(f"  {'Estado':<8} {'ABC':>10} {'PSO':>10} {'GWO':>10}")
+        print(f"  {'-'*40}")
+        for i, row in enumerate(self.tabela_Q):
+            print(f"  {i:<8} {row[0]:>10.4f} {row[1]:>10.4f} {row[2]:>10.4f}")
 
 
 
