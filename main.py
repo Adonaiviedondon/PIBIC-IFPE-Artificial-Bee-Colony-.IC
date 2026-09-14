@@ -17,8 +17,7 @@ from src.ABC.FuncoesParaSolucao import (
 )
 
 # framework híbrido — novo
-from src.framework.ambiente import AmbienteSimulacao
-
+from src.framework.ambiente import AmbienteOtimizacao
 # utilitários — os mesmos que já existiam
 from src.utils.ajudantes import (
     printHeader,
