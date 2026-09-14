@@ -15,52 +15,93 @@ class AmbienteOtimizacao:
         self.melhor_global    = float('inf')
         self.melhor_solucao   = None
 
+        self.abc = AbcOtimizacao()
+        self.pso = PsoOtimizacao()
+        self.gwo = GwoOtimizacao()
+
         self.algoritmos = {0:AbcOtimizacao,1:PsoOtimizacao,2:GwoOtimizacao}
         self.nomes = {0:"ABC",1:"PSO",2:"GWO"}
         self.agente = AgenteRL(alpha = 0.15,gamma = 0.85,epsilon = 0.35)
 
         self.historico = {
-            "melhor_fitness":[],
-            "algotritmo_selecionado":[],
-            "recompensa":[],
+            'melhor_fitness' : [],
+            'algoritmo_usado': [],   
+            'recompensas'    : [],   
         }
     def iniciarAlgoritmo(self):
-        for algoritmo in  self.algoritmos.values():
-            if isinstance(algoritmo,GwoOtimizacao):
-                algoritmo.iniciar(self.funcao,self.bounds,self.tamanho_problema,self.tamanho_populacao,self.num_iteracoes)
+        for algoritmo in self.algoritmos.values():
+            if isinstance(algoritmo, GwoOtimizacao):
+                algoritmo.iniciar(
+                self.funcao ,
+                self.bounds,
+                tamanho_populacao = self.tamanho_populacao,  # ← argumentos nomeados
+                tamanho_problema  = self.tamanho_problema,   # ← evita confusão de ordem
+                Num_Interacoes    = self.num_iteracoes
+            )
             else:
-                algoritmo.iniciar(self.funcao,self.bounds,self.tamanho_problema,self.tamanho_populacao)
+                algoritmo.iniciar(
+                self.funcao,
+                self.bounds,
+                tamanho_populacao = self.tamanho_populacao,  # ← argumentos nomeados
+                tamanho_problema  = self.tamanho_problema
+            )
 
     def obterEstadoGlobal(self):
-        estados=[algoritmo.obter_estado() for algoritmo in self.algoritmos.values]
-        return{
-            "melhor fitness":self.melhor_global,
-            "diversidade":np.mean([e['diversidade'] for e in estados]),
-            "taxa melhoria":np.mean([e['taxa_melhoria'] for e in estados])
+        estados = [alg.obter_estado() for alg in self.algoritmos.values()]
+        return {
+            'melhor_fitness': self.melhor_global,
+            'diversidade'   : float(np.mean([
+                                e.get('diversidade', 0) for e in estados])),
+            'taxa_melhoria' : float(np.mean([
+                                e.get('taxa_melhoria', 1.0) for e in estados])),
         }
 
-    def executarCiclo(self):
-        self.iniciarAlgoritmo()
-
+    def executar(self):
+        
+        self._iniciar_algoritmos()
+ 
         for iteracao in range(self.num_iteracoes):
-            estadoAnterior = self.obterEstadoGlobal()
-            acao      = self.agente.selecionar_acao(estadoAnterior)
-            algoritmo = self.algoritmos[acao]
-
-            fitness_anterior = self.melhor_global
-            fitness_posterior  = algoritmo.executar_ciclo()
-
-            if fitness_posterior < self.melhor_global:
-                self.melhor_global  = fitness_posterior
+            estado_antes  = self.obter_estado_global()
+            acao          = self.agente.selecionar_acao(estado_antes)
+            algoritmo     = self.algoritmos[acao]
+ 
+            fitness_antes = self.melhor_global
+ 
+            
+            fitness_atual = algoritmo.executar_ciclo()
+ 
+            if fitness_atual < self.melhor_global:
+                self.melhor_global  = fitness_atual
                 self.melhor_solucao = algoritmo.obter_melhor_solucao()
-
-            estado_depois = self.obterEstadoGlobal()
-            recompensa    = self.agente.calcular_recompensa(fitness_anterior, self.melhor_global)
-            self.agente.atualizar(estado_depois, acao, recompensa, estado_depois)
+ 
+            estado_depois = self.obter_estado_global()
+            recompensa    = self.agente.calcular_recompensa(
+                                fitness_antes, self.melhor_global)
+ 
+            
+            self.agente.atualizar(estado_antes, acao, recompensa, estado_depois)
             self.agente.reduzir_epsilon()
-
+ 
             self.historico['melhor_fitness'].append(self.melhor_global)
             self.historico['algoritmo_usado'].append(self.nomes[acao])
             self.historico['recompensas'].append(recompensa)
-
+ 
+            if self.verbose:
+                print(f"  Iter {iteracao+1:>4}/{self.num_iteracoes} | "
+                      f"Alg: {self.nomes[acao]:<4} | "
+                      f"Melhor: {self.melhor_global:.6f}")
+ 
         return self.melhor_solucao, self.melhor_global, self.historico
+
+    def imprimir_uso_algoritmos(self):
+        usado = self.historico['algoritmo_usado']
+        total = len(usado)
+        if total == 0:
+            return
+        print("\n  Uso dos algoritmos pelo agente RL:")
+        for nome in ['ABC', 'PSO', 'GWO']:
+            count = usado.count(nome)
+            pct   = count / total * 100
+            barra = '█' * int(pct / 2.5) + '░' * (40 - int(pct / 2.5))
+            print(f"  {nome}: |{barra}| {pct:.1f}% ({count} iterações)")
+ 

@@ -49,7 +49,7 @@ CONFIG = {
 def testeSimples():
     printHeader("TESTE SIMPLES — Esfera (1 execução, framework híbrido)")
 
-    ambiente = ambiente(
+    amb = AmbienteOtimizacao(
         funcao            = Esfera,
         bounds            = CONFIG['bounds'],
         tamanho_populacao = CONFIG['tamanho_populacao'],
@@ -58,11 +58,11 @@ def testeSimples():
         verbose           = True,
     )
 
-    melhor_solucao, melhor_fitness, historico = ambiente.executar()
+    melhor_solucao, melhor_fitness, historico = amb.executar()
 
     print(f"\n  Melhor fitness encontrado: {melhor_fitness:.6f}")
-    ambiente.imprimir_uso_algoritmos()
-    ambiente.agente.imprimir_qtable()
+    amb.imprimir_uso_algoritmos()
+    amb.agente.imprimir_qtable()
 
 
 def rodarExperimentos():
@@ -83,7 +83,7 @@ def rodarExperimentos():
 
         for execucao in range(CONFIG['num_execucoes']):
 
-            ambiente = ambiente(
+            amb = AmbienteOtimizacao(
                 funcao            = fn,
                 bounds            = CONFIG['bounds'],
                 tamanho_populacao = CONFIG['tamanho_populacao'],
@@ -92,7 +92,7 @@ def rodarExperimentos():
                 verbose           = False,
             )
 
-            melhor_solucao, melhor_fitness, historico = ambiente.executar()
+            melhor_solucao, melhor_fitness, historico = amb.executar()
             melhores.append(melhor_fitness)
 
             for alg, count in contar_uso(historico['algoritmo_usado']).items():
@@ -134,7 +134,7 @@ def rodarExperimentos():
     with open(caminho_geral, 'w', encoding='utf-8') as f:
         json.dump(todos_resultados, f, indent=2, ensure_ascii=False)
 
-    logger.tempo_passado()
+    logger.tempo_decorrido() 
     logger.sucesso(f"Resultados salvos em {CONFIG['pasta_resultados']}/")
 
 
