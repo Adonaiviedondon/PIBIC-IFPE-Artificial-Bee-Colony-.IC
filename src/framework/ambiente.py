@@ -15,7 +15,7 @@ class AmbienteOtimizacao:
         self.melhor_global    = float('inf')
         self.melhor_solucao   = None
 
-        self.algoritmos = {0:AbcOtimizador,1:PsoOtimizador,2:GwoOtimizador}
+        self.algoritmos = {0:AbcOtimizacao,1:PsoOtimizacao,2:GwoOtimizacao}
         self.nomes = {0:"ABC",1:"PSO",2:"GWO"}
         self.agente = AgenteRL(alpha = 0.15,gamma = 0.85,epsilon = 0.35)
 
@@ -26,7 +26,7 @@ class AmbienteOtimizacao:
         }
     def iniciarAlgoritmo(self):
         for algoritmo in  self.algoritmos.values():
-            if isinstance(algoritmo,GwoOtimizador):
+            if isinstance(algoritmo,GwoOtimizacao):
                 algoritmo.iniciar(self.funcao,self.bounds,self.tamanho_problema,self.tamanho_populacao,self.num_iteracoes)
             else:
                 algoritmo.iniciar(self.funcao,self.bounds,self.tamanho_problema,self.tamanho_populacao)
